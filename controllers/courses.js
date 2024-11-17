@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Course = require('../models/course').Course;
+const Course = require('../models/course');
 
 // get all courses
 router.get('/', async (req, res) => {
@@ -12,9 +12,13 @@ router.get('/', async (req, res) => {
     }
 });
 
-// post a new course
+// post new course
 router.post('/', async (req, res) => {
     try {
+        if (req.user.role !== 'instructor') {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+        req.body.instructor = req.user._id;
         const course = new Course(req.body);
         await course.save();
         res.status(201).json({ course });
@@ -40,6 +44,9 @@ router.get('/:id', async (req, res) => {
 // update a course by id
 router.put('/:id', async (req, res) => {
     try {
+        if (req.body.instructor !== req.user._id) {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
         const course = await Course.findByIdAndUpdate
         (req.params.id, req.body, { new: true });
         if (course) {
