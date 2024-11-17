@@ -59,5 +59,27 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+router.post('/:id/lessons', async (req, res) => {
+    try {
+        const course = await Course.findById(req.params.id);
+        // if (req.user._id !== course.instructor) {
+        //     return res.status(401).json({ error: "Unauthorized"})
+        // }
+        // console.log(course)
+        // console.log(course.instructor + " == " + req.user._id)
+
+      course.lessons.push(req.body);
+      await course.save();
+  
+      const newLesson = course.lessons[course.lessons.length - 1];
+  
+      newLesson._doc.content = req.user;
+  
+      res.status(201).json(newLesson);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  });
+  
 
 module.exports = router;
