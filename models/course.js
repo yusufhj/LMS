@@ -1,5 +1,17 @@
 const mongoose = require('mongoose');
 
+const lessonSchema = mongoose.Schema(
+    {
+        title: {
+            type: String,
+            required: true,
+        },
+        content: {
+            type: String,
+        }
+    }, 
+);
+
 const courseSchema = mongoose.Schema(
     {
         title: {
@@ -13,28 +25,10 @@ const courseSchema = mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
         },
-        lessons: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'Lesson',
-            },
-        ],
+        lessons: [lessonSchema],
     }, 
 );
 
-const enrollmentSchema = mongoose.Schema(
-    {
-        course: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Course',
-        },
-        student: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-        },
-    }
-);
 
 const Course = mongoose.model('Course', courseSchema);
-const Enrollment = mongoose.model('Enrollment', enrollmentSchema);
-module.exports = { Course, Enrollment };
+module.exports = Course;
