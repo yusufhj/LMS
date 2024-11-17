@@ -16,10 +16,11 @@ router.post('/signup', async (req, res) => {
         const user = await User.create({
             username: req.body.username,
             hashedPassword: bcrypt.hashSync(req.body.password, parseInt(process.env.SALT_ROUNDS)),
+            role: req.body.role,
         });
         
         const token = jwt.sign(
-            { username: user.username, _id: user._id }, 
+            { username: user.username, _id: user._id, role: user.role }, 
             process.env.JWT_SECRET
         );
 
@@ -40,7 +41,7 @@ router.post('/signin', async (req, res) => {
         if (user && bcrypt.compareSync(req.body.password, user.hashedPassword)) {
             // res.json({ message: 'You are authorized!' });
             const token = jwt.sign(
-                { username: user.username, _id: user._id }, 
+                { username: user.username, _id: user._id, role: user.role }, 
                 process.env.JWT_SECRET
             );
             res.json({ token });
