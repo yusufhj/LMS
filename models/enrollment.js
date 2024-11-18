@@ -15,6 +15,11 @@ const enrollmentSchema = mongoose.Schema(
             default: 'pending',
             enum: ['pending', 'completed', 'withdrawn', ],
         },
+        completedLessonIds: [
+            {
+                type: String
+            }
+        ],
     }
 );
 

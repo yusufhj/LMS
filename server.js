@@ -1,7 +1,7 @@
-require('dotenv').config();
+require('dotenv').config()
 require('./config/database');
 const express = require('express');
-const morgan = require('morgan');
+const morgan = require('morgan')
 const verifyToken = require('./middleware/verify-token');
 
 // Controllers
