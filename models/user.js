@@ -12,9 +12,9 @@ const userSchema = mongoose.Schema(
             required: true,
         },
         role: {
-        type: String,
-        enum: ['instructor', 'student'],
-        required: true,
+            type: String,
+            enum: ['instructor', 'student'],
+            required: true,
         },
     }, 
     {   timestamps: true, }
