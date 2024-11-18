@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Course = require('../models/course');
+const Enrollment = require('../models/enrollment');
 
 // COURSES ROUTES
 // get all courses
@@ -42,14 +43,15 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// update a course by id
+// update a course by id 
+// needs to be checked
 router.put('/:id', async (req, res) => {
     try {
+        // check this
         if (req.body.instructor !== req.user._id) {
             return res.status(401).json({ error: 'Unauthorized' });
         }
-        const course = await Course.findByIdAndUpdate
-        (req.params.id, req.body, { new: true });
+        const course = await Course.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (course) {
             res.json({ course });
         } else {
@@ -62,17 +64,27 @@ router.put('/:id', async (req, res) => {
 
 // LESSONS ROUTES
 // get all lessons
+router.get('/:id/lessons', async (req, res) => {
+    try {
+        const course = await Course.findById(req.params.id);
+        res.json({ lessons: course.lessons });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// post new lesson
 router.post('/:id/lessons', async (req, res) => {
     try {
         const course = await Course.findById(req.params.id);
-        if (req.user._id !== course.instructor) {
-            return res.status(401).json({ error: "Unauthorized"})
-        }
+        if (req.user._id !== course.instructor.toString()) { 
+            return res.status(401).json({ error: "Unauthorized" })
+         } 
         // console.log(course)
         // console.log(course.instructor + " == " + req.user._id)
 
       course.lessons.push(req.body);
-      console.log(course.lessons)
+    //   console.log(course.lessons)
       await course.save();
   
       const newLesson = course.lessons[course.lessons.length - 1];
@@ -84,37 +96,31 @@ router.post('/:id/lessons', async (req, res) => {
 });
 
 // get lesson by id
-router.put('/:id/lessons/:lessonsId', async (req, res) => {
-    try {
-        const course = await Course.findById(req.params.courseId)
-        const lesson = course.lessons.id(req.params.lessonId)
-        lesson.text = req.body.text
-        await course.save()
-        res.status(200).json({ message: 'Ok' })
-    } catch (error) {
-        res.status(500).json(error)
-    }
-})
+
 
 // update lesson
 router.put('/:id/lessons/:lessonId', async (req, res) => { 
     try { 
         const course = await Course.findById(req.params.id); 
+        // console.log(course)
         const lesson = course.lessons.id(req.params.lessonId);
-         if (req.user._id !== course.instructor) { 
+        // console.log(lesson)
+        // console.log(req.user._id)
+        // console.log(course.instructor.toString());
+         if (req.user._id !== course.instructor.toString()) { 
             return res.status(401).json({ error: "Unauthorized" })
          } 
          if (lesson) { 
             lesson.title = req.body.title || lesson.title;
-             lesson.content = req.body.content || lesson.content; 
-             await course.save(); 
-             res.status(200).json({ lesson }); 
+            lesson.content = req.body.content || lesson.content; 
+            await course.save(); 
+            res.status(200).json({ lesson }); 
         } else { 
-                res.status(404).json({ error: 'Lesson not found' }); 
+            res.status(404).json({ error: 'Lesson not found' }); 
         } 
-    } 
-            catch (error) { res.status(500).json(error);
-            }
+    } catch (error) { 
+        res.status(500).json(error);
+    }
 });
 
 // delete lesson
@@ -122,20 +128,42 @@ router.delete('/:id/lessons/:lessonId', async (req, res) => {
     try { 
         const course = await Course.findById(req.params.id); 
         const lesson = course.lessons.id(req.params.lessonId); 
-        if (req.user._id !== course.instructor) { 
-            return res.status(401).json({ error: "Unauthorized" }) 
+        console.log(lesson)
+        if (req.user._id !== course.instructor.toString()) { 
+            return res.status(401).json({ error: "Unauthorized" })
         } 
         if (lesson) { 
-            lesson.remove(); 
+            course.lessons.id(req.params.lessonId).remove(); 
             await course.save(); 
             res.status(200).json({ message: 'Lesson deleted successfully' });
-         } 
-         else { 
+        } else { 
             res.status(404).json({ error: 'Lesson not found' });
-        } } catch (error) {
+        } 
+    } catch (error) {
              res.status(500).json(error);
     } 
 });
 
+// ENROLLMENT ROUTES
+// student enrolls in a course
+router.post('/:id/enroll', async (req, res) => {
+    try {
+        const course = await Course.findById(req.params.id);
+        if (!course) {
+            return res.status(404).json({ error: 'Course not found' });
+        }
+        if (req.user.role !== 'student') {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const enrollment = new Enrollment({
+            course: req.params.id,
+            student: req.user._id,
+        });
+        await enrollment.save();
+        res.status(201).json({ enrollment });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 module.exports = router;
