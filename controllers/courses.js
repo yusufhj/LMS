@@ -60,6 +60,8 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+// LESSONS ROUTES
+// get all lessons
 router.post('/:id/lessons', async (req, res) => {
     try {
         const course = await Course.findById(req.params.id);
@@ -79,9 +81,10 @@ router.post('/:id/lessons', async (req, res) => {
     } catch (error) {
       res.status(500).json(error);
     }
-  });
+});
 
-  router.put('/:id/lessons/:lessonsId', async (req, res) => {
+// get lesson by id
+router.put('/:id/lessons/:lessonsId', async (req, res) => {
     try {
         const course = await Course.findById(req.params.courseId)
         const lesson = course.lessons.id(req.params.lessonId)
@@ -92,7 +95,8 @@ router.post('/:id/lessons', async (req, res) => {
         res.status(500).json(error)
     }
 })
-  
+
+// update lesson
 router.put('/:id/lessons/:lessonId', async (req, res) => { 
     try { 
         const course = await Course.findById(req.params.id); 
@@ -113,6 +117,7 @@ router.put('/:id/lessons/:lessonId', async (req, res) => {
             }
 });
 
+// delete lesson
 router.delete('/:id/lessons/:lessonId', async (req, res) => { 
     try { 
         const course = await Course.findById(req.params.id); 
