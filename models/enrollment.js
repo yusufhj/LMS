@@ -10,6 +10,11 @@ const enrollmentSchema = mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
         },
+        status: {
+            type: String,
+            default: 'pending',
+            enum: ['pending', 'completed', 'withdrawn', ],
+        },
     }
 );
 
