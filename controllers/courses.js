@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Course = require('../models/course');
 
+// COURSES ROUTES
 // get all courses
 router.get('/', async (req, res) => {
     try {
@@ -58,6 +59,7 @@ router.put('/:id', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
 
 
 module.exports = router;
