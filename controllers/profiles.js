@@ -35,7 +35,7 @@ router.get('/:userId', async (req, res) => {
       throw new Error('Profile not found.');
     }
     // console.log(user.username)
-    res.json( user.username );
+    res.json({ user });
   } catch (error) {
     if (res.statusCode === 404) {
       res.status(404).json({ error: error.message });
