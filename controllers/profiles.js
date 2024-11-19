@@ -5,6 +5,9 @@ const User = require('../models/user');
 // allow signed in user to view their own profile only
 router.get('/currentUser', async (req, res) => {
     try {
+        if (req.user._id !== req.params.userId){
+            return res.status(401).json({ error: "Unauthorized"})
+        }
         const user = await User.findById(req.user._id);
         if (!user) {
             res.status(404);
@@ -18,12 +21,12 @@ router.get('/currentUser', async (req, res) => {
             res.status(500).json({ error: error.message });
         }
     }
-});
+  });
 
-// allow all signed in users to view other users' profiles
+// allow all signed in users to view other users' profiles only for instructors
 router.get('/:userId', async (req, res) => {
   try {
-    if (req.user._id !== req.params.userId){
+    if (req.user.role !== 'instructor'){
         return res.status(401).json({ error: "Unauthorized"})
     }
     const user = await User.findById(req.params.userId);
@@ -31,7 +34,8 @@ router.get('/:userId', async (req, res) => {
       res.status(404);
       throw new Error('Profile not found.');
     }
-    res.json({ user });
+    // console.log(user.username)
+    res.json( user.username );
   } catch (error) {
     if (res.statusCode === 404) {
       res.status(404).json({ error: error.message });
