@@ -148,6 +148,8 @@ router.put('/:id/lessons/:lessonId', async (req, res) => {
             lesson.title = req.body.title || lesson.title;
             lesson.content = req.body.content || lesson.content; 
             await course.save(); 
+            lesson._doc.title = req.body.title;
+            lesson._doc.content = req.body.content;
             res.status(200).json({ lesson }); 
         } else { 
             res.status(404).json({ error: 'Lesson not found' }); 
