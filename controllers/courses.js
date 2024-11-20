@@ -17,6 +17,18 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.get('/enrollments', async (req, res) => {
+    try {
+        const enrollments = await Enrollment.find({ student: req.user._id });
+        if (!enrollments) {
+            return res.status(200).json({ message: 'No enrollments found' });
+        }
+        res.status(200).json(enrollments);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // SHOW - GET ONE COURSE BY ID
 router.get('/:id', async (req, res) => {
     try {
@@ -315,18 +327,6 @@ router.put('/:id/complete', async (req, res) => {
         enrollment.status = 'completed';
         await enrollment.save();
         res.status(200).json({ message: 'Course completed', enrollment });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-router.get('/:id/enrollments', async (req, res) => {
-    try {
-        const enrollments = await Enrollment.find({ course: req.params.id });
-        res.status(200).json(enrollments);
-        if (!enrollments) {
-            return res.status(200).json({ message: 'No enrollments found' });
-        }
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

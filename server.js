@@ -25,6 +25,6 @@ app.use(verifyToken);
 app.use('/profiles', profilesRouter);
 app.use('/courses', coursesRouter);
 
-app.listen(3000, () => {
+app.listen(process.env.PORT || 3000, () => {
   console.log('The express app is ready!');
 });
