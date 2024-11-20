@@ -178,12 +178,83 @@ router.post('/:id/enroll', async (req, res) => {
         if (req.user.role !== 'student') {
             return res.status(401).json({ error: 'Unauthorized' });
         }
+        const existingEnrollment = await Enrollment.findOne({
+            course: req.params.id,
+            student: req.user._id,
+        });
+        // console.log(existingEnrollment)
+        if (existingEnrollment) {
+            if (existingEnrollment.status === 'completed') {
+                return res.status(400).json({ error: 'Already completed this course' });
+            } else if (existingEnrollment.status === 'withdrawn') {
+                existingEnrollment.status = 'pending';
+                await existingEnrollment.save();
+                return res.status(200).json({ enrollment: existingEnrollment });
+            }
+            return res.status(400).json({ error: 'Already enrolled in this course' });
+        }
         const enrollment = new Enrollment({
             course: req.params.id,
             student: req.user._id,
         });
         await enrollment.save();
         res.status(201).json({ enrollment });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// student withdraws from course
+router.put('/:id/unenroll', async (req, res) => {
+    try {
+        const course = await Course.findById(req.params.id);
+        if (!course) {
+            return res.status(404).json({ error: 'Course not found' });
+        }
+        if (req.user.role !== 'student') {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const enrollment = await Enrollment.findOne({
+            course: req.params.id,
+            student: req.user._id,
+        });
+        if (!enrollment) {
+            return res.status(404).json({ error: 'Enrollment not found' });
+        }
+        enrollment.status = 'withdrawn';
+        enrollment.completedLessonIds = [];
+        await enrollment.save();
+        res.status(200).json({ message: 'Course withdrawn', enrollment });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.put('/:id/enroll', async (req, res) => {
+    try {
+        const course = await Course.findById(req.params.id);
+        if (!course) {
+            return res.status(404).json({ error: 'Course not found' });
+        }
+        if (req.user.role !== 'student') {
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+        const enrollment = await Enrollment.findOne({
+            course: req.params.id,
+            student: req.user._id,
+        });
+        if (!enrollment) {
+            return res.status(404).json({ error: 'Enrollment not found' });
+        }
+        if (enrollment.status === 'completed') {
+            return res.status(400).json({ error: 'Already completed this course' });
+        }
+        if (enrollment.status === 'pending') {
+            return res.status(400).json({ error: 'Already enrolled in this course' });
+        }
+        enrollment.status = 'pending';
+        await enrollment.save();
+        res.status(200).json({ enrollment });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -213,32 +284,6 @@ router.put('/:id/lessons/:lessonId/complete', async (req, res) => {
         enrollment.completedLessonIds.push(req.params.lessonId);
         await enrollment.save();
         res.status(200).json({ message: 'Lesson completed', enrollment });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// student withdraws from course
-router.put('/:id/withdraw', async (req, res) => {
-    try {
-        const course = await Course.findById(req.params.id);
-        if (!course) {
-            return res.status(404).json({ error: 'Course not found' });
-        }
-        if (req.user.role !== 'student') {
-            return res.status(401).json({ error: 'Unauthorized' });
-        }
-        const enrollment = await Enrollment.findOne({
-            course: req.params.id,
-            student: req.user._id,
-        });
-        if (!enrollment) {
-            return res.status(404).json({ error: 'Enrollment not found' });
-        }
-        enrollment.status = 'withdrawn';
-        enrollment.completedLessonIds = [];
-        await enrollment.save();
-        res.status(200).json({ message: 'Course withdrawn', enrollment });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -275,5 +320,28 @@ router.put('/:id/complete', async (req, res) => {
     }
 });
 
+router.get('/:id/enrollments', async (req, res) => {
+    try {
+        const enrollments = await Enrollment.find({ course: req.params.id });
+        res.status(200).json(enrollments);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+router.get('/:id/enrollments/:userId', async (req, res) => {
+    try {
+        const enrollment = await Enrollment.findOne({
+            course: req.params.id,
+            student: req.params.userId,
+        });
+        if (!enrollment) {
+            return res.status(404).json({ error: 'Enrollment not found' });
+        }
+        res.status(200).json(enrollment);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 module.exports = router;

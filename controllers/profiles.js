@@ -26,9 +26,6 @@ router.get('/currentUser', async (req, res) => {
 // allow all signed in users to view other users' profiles only for instructors
 router.get('/:userId', async (req, res) => {
   try {
-    if (req.user.role !== 'instructor'){
-        return res.status(401).json({ error: "Unauthorized"})
-    }
     const user = await User.findById(req.params.userId);
     if (!user) {
       res.status(404);
