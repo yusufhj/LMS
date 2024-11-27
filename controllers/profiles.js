@@ -5,9 +5,6 @@ const User = require('../models/user');
 // allow signed in user to view their own profile only
 router.get('/currentUser', async (req, res) => {
     try {
-        if (req.user._id !== req.params.userId){
-            return res.status(401).json({ error: "Unauthorized"})
-        }
         const user = await User.findById(req.user._id);
         if (!user) {
             res.status(404);
